@@ -1,7 +1,9 @@
 {% extends "base.html" %}
 {% block title %}Dashboard{% endblock %}
+{% block page_heading %}Dashboard{% endblock %}
 {% block content %}
-<h1>Dashboard</h1>
+<h1>Good to see you, {{ user.username|title }}</h1>
+<p class="dashboard-intro">Here’s a quick overview of what’s happening at your workshop.</p>
 <div class="stats">
   <article><span>Customers</span><strong>{{ counts.customers }}</strong></article>
   <article><span>Vehicles</span><strong>{{ counts.vehicles }}</strong></article>
