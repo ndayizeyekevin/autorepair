@@ -1,0 +1,8 @@
+Chapter 6. Web Application/ Interface
+·	Upload the web app project files to a public GitHub repository and add all team members as collaborators. The repository name must contain the project name and group number, e.g. product-management-system-group-1.
+·	Write the repository link on the drive file.( Excel link will be shared on Moodle before the presentation.)
+·	The project must be reproducible with Docker: after cloning the repository, the single command docker compose up must start the database (with tables and sample data) and the web app.
+·	The web app must have authentication and authorization: users log in with a username and password, passwords are stored hashed, and there are at least two roles with different permissions (e.g. admin and standard user).
+·	The app must be capable of Insert, Delete and Update operations.
+·	Add a README.md with the address to open and a test username and password for each role.
+·	You can use any tools to create the interface and connect to the database.

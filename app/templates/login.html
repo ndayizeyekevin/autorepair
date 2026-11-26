@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Login - Auto Service</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body class="login-body">
+  <form class="login-card" method="post" action="/login">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <h1>Auto Service</h1>
+    <p>Sign in to manage the workshop.</p>
+    {% if error %}<div class="alert danger">{{ error }}</div>{% endif %}
+    <label>Username<input name="username" required autocomplete="username"></label>
+    <label>Password<input type="password" name="password" required autocomplete="current-password"></label>
+    <button type="submit">Login</button>
+  </form>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{% extends "base.html" %}{% block title %}Appointment{% endblock %}{% block content %}
+<section class="card"><h1>{{ 'Edit' if item else 'New' }} Appointment</h1>{% if error %}<div class="alert danger">{{ error }}</div>{% endif %}
+<form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><div class="form-grid">
+<label>Date and time *<input type="datetime-local" name="appointmentdate" required value="{{ item.appointmentdate.strftime('%Y-%m-%dT%H:%M') if item and item.appointmentdate else '' }}"></label>
+<label>Status *<select name="status">{% for s in statuses %}<option {% if item and item.status==s %}selected{% endif %}>{{ s }}</option>{% endfor %}</select></label>
+<label>Customer *<select id="customer" name="customerid" required><option value="">Choose customer</option>{% for c in customers %}<option value="{{ c.customerid }}" {% if item and item.customerid==c.customerid %}selected{% endif %}>{{ c.name }}</option>{% endfor %}</select></label>
+<label>Vehicle *<select id="vehicle" name="vehicleid" required><option value="">Choose vehicle</option>{% for v in vehicles %}<option value="{{ v.vehicleid }}" {% if item and item.vehicleid==v.vehicleid %}selected{% endif %}>{{ v.platenumber }} - {{ v.brand }} {{ v.model }}</option>{% endfor %}</select></label>
+<label class="full">Receptionist *<select name="receptionistid" required><option value="">Choose receptionist</option>{% for r in receptionists %}<option value="{{ r.employeeid }}" {% if item and item.receptionistid==r.employeeid %}selected{% endif %}>{{ r.name }}</option>{% endfor %}</select></label>
+</div><button class="button">Save</button> <a class="button secondary" href="/appointments">Cancel</a></form></section>
+<script>document.getElementById('customer').addEventListener('change',async e=>{const r=await fetch('/appointments/vehicles/'+e.target.value);const vs=await r.json();const s=document.getElementById('vehicle');s.innerHTML='<option value="">Choose vehicle</option>'+vs.map(v=>`<option value="${v.vehicleid}">${v.platenumber} - ${v.brand} ${v.model}</option>`).join('')})</script>
+{% endblock %}

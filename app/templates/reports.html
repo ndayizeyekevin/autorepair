@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Reports{% endblock %}
+{% block content %}
+<h1>Reports</h1>
+{% for report in reports %}
+<section class="card">
+  <h2>{{ report.title }}</h2>
+  <pre class="sql-box"><code>{{ report.sql }}</code></pre>
+  <div style="overflow:auto">
+  <table><thead><tr>{% for c in report.columns %}<th>{{ c }}</th>{% endfor %}</tr></thead><tbody>
+  {% for row in report.rows %}<tr>{% for c in report.columns %}<td>{{ row[c.lower().replace(' ','_')] }}</td>{% endfor %}</tr>{% endfor %}
+  </tbody></table>
+  </div>
+</section>
+{% endfor %}
+{% endblock %}

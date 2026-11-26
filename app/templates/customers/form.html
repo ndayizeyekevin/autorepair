@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if item else 'New' }} Customer{% endblock %}
+{% block content %}
+<section class="card">
+<h1>{{ 'Edit' if item else 'New' }} Customer</h1>
+{% if error %}<div class="alert danger">{{ error }}</div>{% endif %}
+<form method="post">
+<input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+<div class="form-grid">
+<label>Name *<input name="name" required maxlength="100" value="{{ item.name if item else '' }}"></label>
+<label>Phone<input name="phone" maxlength="20" value="{{ item.phone if item else '' }}"></label>
+<label class="full">Address<input name="address" maxlength="255" value="{{ item.address if item else '' }}"></label>
+<label class="full">Email<input type="email" name="email" maxlength="100" value="{{ item.email if item else '' }}"></label>
+</div>
+<button class="button" type="submit">Save</button> <a class="button secondary" href="/customers">Cancel</a>
+</form></section>
+{% endblock %}

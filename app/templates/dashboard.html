@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h1>Dashboard</h1>
+<div class="stats">
+  <article><span>Customers</span><strong>{{ counts.customers }}</strong></article>
+  <article><span>Vehicles</span><strong>{{ counts.vehicles }}</strong></article>
+  <article><span>Open appointments</span><strong>{{ counts.open_appointments }}</strong></article>
+  <article><span>Repairs</span><strong>{{ counts.repairs }}</strong></article>
+  <article><span>Total invoiced</span><strong>{{ "%.2f"|format(counts.total_invoiced) }} TL</strong></article>
+</div>
+{% endblock %}

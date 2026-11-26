@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Vehicle{% endblock %}
+{% block content %}
+<section class="card"><h1>{{ 'Edit' if item else 'New' }} Vehicle</h1>{% if error %}<div class="alert danger">{{ error }}</div>{% endif %}
+<form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><div class="form-grid">
+<label>Plate number *<input name="platenumber" required maxlength="20" value="{{ item.platenumber if item else '' }}"></label>
+<label>Brand *<input name="brand" required maxlength="50" value="{{ item.brand if item else '' }}"></label>
+<label>Model *<input name="model" required maxlength="50" value="{{ item.model if item else '' }}"></label>
+<label>Year<input type="number" name="year" min="1900" max="2100" value="{{ item.year if item and item.year else '' }}"></label>
+<label class="full">Customer *<select name="customerid" required><option value="">Choose customer</option>{% for c in customers %}<option value="{{ c.customerid }}" {% if item and item.customerid == c.customerid %}selected{% endif %}>{{ c.customerid }} - {{ c.name }}</option>{% endfor %}</select></label>
+</div><button class="button">Save</button> <a class="button secondary" href="/vehicles">Cancel</a></form></section>
+{% endblock %}

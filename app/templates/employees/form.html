@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Employee{% endblock %}
+{% block content %}
+<section class="card"><h1>{{ 'Edit' if item else 'New' }} Employee</h1>{% if error %}<div class="alert danger">{{ error }}</div>{% endif %}
+<form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><div class="form-grid">
+<label>Name *<input name="name" required value="{{ item.name if item else '' }}"></label>
+<label>Phone<input name="phone" value="{{ item.phone if item else '' }}"></label>
+<label>Position *<select name="position" {% if item %}disabled{% endif %} required><option value="">Choose position</option>{% for p in ['Receptionist','Manager','Mechanic'] %}<option value="{{ p }}" {% if item and item.position == p %}selected{% endif %}>{{ p }}</option>{% endfor %}</select>{% if item %}<input type="hidden" name="position" value="{{ item.position }}">{% endif %}</label>
+</div>
+<div class="subclass receptionist" {% if not item or item.position != 'Receptionist' %}hidden{% endif %}>
+<h3>Receptionist details</h3><label>Shift<input name="shift" value="{{ item.shift if item and item.shift is defined else '' }}"></label><label>Languages<input name="languages" value="{{ item.languages if item and item.languages is defined else '' }}"></label>
+</div>
+<div class="subclass manager" {% if not item or item.position != 'Manager' %}hidden{% endif %}>
+<h3>Manager details</h3><label>Department<input name="department" value="{{ item.department if item and item.department is defined else '' }}"></label><label>Bonus<input type="number" step="0.01" name="bonus" value="{{ item.bonus if item and item.bonus is defined else '' }}"></label>
+</div>
+<div class="subclass mechanic" {% if not item or item.position != 'Mechanic' %}hidden{% endif %}>
+<h3>Mechanic details</h3><label>Specialty<input name="specialty" value="{{ item.specialty if item and item.specialty is defined else '' }}"></label><label>Experience years<input type="number" min="0" name="experienceyears" value="{{ item.experienceyears if item and item.experienceyears is defined else '' }}"></label>
+</div>
+<button class="button">Save</button> <a class="button secondary" href="/employees">Cancel</a>
+</form></section>
+<script>const position=document.querySelector('[name=position]:not([disabled])');if(position){position.addEventListener('change',()=>document.querySelectorAll('.subclass').forEach(x=>x.hidden=!x.classList.contains(position.value.toLowerCase())));}</script>
+{% endblock %}

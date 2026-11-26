@@ -1,0 +1,6 @@
+{% extends "base.html" %}{% block title %}Appointments{% endblock %}{% block content %}
+<div class="toolbar"><h1>Appointments</h1><a class="button" href="/appointments/new">Add appointment</a></div>
+<form class="search card" method="get"><select name="status"><option value="">All statuses</option>{% for s in statuses %}<option value="{{ s }}" {% if status==s %}selected{% endif %}>{{ s }}</option>{% endfor %}</select><button class="button">Filter</button></form>
+<div class="card"><table><thead><tr><th>ID</th><th>Date</th><th>Status</th><th>Customer</th><th>Vehicle</th><th>Receptionist</th><th>Actions</th></tr></thead><tbody>
+{% for r in rows %}<tr><td>{{ r.appointmentid }}</td><td>{{ r.appointmentdate }}</td><td>{{ r.status }}</td><td>{{ r.customer_name }}</td><td>{{ r.vehicle_plate }}</td><td>{{ r.receptionist_name }}</td><td class="actions"><a class="button secondary" href="/appointments/{{ r.appointmentid }}/edit">Edit</a>{% if user.role=='admin' %}<form class="inline" method="post" action="/appointments/{{ r.appointmentid }}/delete" onsubmit="return confirm('Delete appointment?')"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button>Delete</button></form>{% endif %}</td></tr>{% endfor %}
+</tbody></table></div>{% endblock %}

@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Auto Service{% endblock %}</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+  {% if user %}
+  <nav class="navbar">
+    <a class="brand" href="/">Auto Service</a>
+    <div class="nav-links">
+      <a href="/customers">Customers</a>
+      <a href="/vehicles">Vehicles</a>
+      <a href="/appointments">Appointments</a>
+      <a href="/repairs">Repairs</a>
+      <a href="/invoices">Invoices</a>
+      <a href="/parts">Parts</a>
+      <a href="/employees">Employees</a>
+      <a href="/reports">Reports</a>
+      {% if user.role == 'admin' %}<a href="/users">Users</a>{% endif %}
+    </div>
+    <div class="account">
+      <span>{{ user.username }} · {{ user.role }}</span>
+      <form method="post" action="/logout">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <button class="link-button" type="submit">Logout</button>
+      </form>
+    </div>
+  </nav>
+  {% endif %}
+  <main class="container">
+    {% if message %}<div class="alert">{{ message }}</div>{% endif %}
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

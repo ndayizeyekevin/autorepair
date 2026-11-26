@@ -1,0 +1,131 @@
+CREATE TABLE CUSTOMER (
+    CustomerID INT PRIMARY KEY,
+    Name VARCHAR(100) NOT NULL, 
+    Phone VARCHAR(20),
+    Address VARCHAR(255),
+    Email VARCHAR(100)
+       );
+CREATE TABLE VEHICLE (
+    VehicleID INT PRIMARY KEY,
+    PlateNumber VARCHAR(20) UNIQUE NOT NULL,
+    Brand VARCHAR(50) NOT NULL,
+     Model VARCHAR(50) NOT NULL,
+    Year INT,
+    CustomerID INT NOT NULL,
+    FOREIGN KEY (CustomerID) REFERENCES CUSTOMER(CustomerID) ON DELETE CASCADE
+    );
+CREATE TABLE EMPLOYEE (
+    EmployeeID INT PRIMARY KEY,
+    Name VARCHAR(100) NOT NULL,
+    Phone VARCHAR(20),
+    Position VARCHAR(50) NOT NULL
+    );
+CREATE TABLE RECEPTIONIST (
+    EmployeeID INT PRIMARY KEY,
+    Shift VARCHAR(50), 
+    Languages VARCHAR(100), 
+    FOREIGN KEY (EmployeeID) REFERENCES EMPLOYEE(EmployeeID) ON DELETE CASCADE
+    ); 
+CREATE TABLE MANAGER (
+    EmployeeID INT PRIMARY KEY, 
+    Department VARCHAR(100), 
+    Bonus DECIMAL(10, 2), 
+    FOREIGN KEY (EmployeeID) 
+    REFERENCES EMPLOYEE(EmployeeID) ON DELETE CASCADE
+    ); 
+CREATE TABLE MECHANIC (
+    EmployeeID INT PRIMARY KEY, 
+    Specialty VARCHAR(100), 
+    ExperienceYears INT, 
+    FOREIGN KEY (EmployeeID) REFERENCES EMPLOYEE(EmployeeID) ON DELETE CASCADE
+    ); 
+CREATE TABLE APPOINTMENT (
+    AppointmentID INT PRIMARY KEY, 
+    AppointmentDate TIMESTAMP NOT NULL, 
+    Status VARCHAR(20) DEFAULT 'Pending', 
+    CustomerID INT NOT NULL, 
+    VehicleID INT NOT NULL, 
+    ReceptionistID INT NOT NULL, 
+    FOREIGN KEY (CustomerID) REFERENCES CUSTOMER(CustomerID) ON DELETE CASCADE,
+    FOREIGN KEY (VehicleID) REFERENCES VEHICLE(VehicleID) ON DELETE CASCADE, 
+    FOREIGN KEY (ReceptionistID) REFERENCES RECEPTIONIST(EmployeeID) ON DELETE CASCADE); 
+CREATE TABLE REPAIR (
+    RepairID INT PRIMARY KEY, 
+    ProblemDescription TEXT, 
+    RepairDate TIMESTAMP NOT NULL, 
+    Cost DECIMAL(10, 2), 
+    VehicleID INT NOT NULL, 
+    MechanicID INT NOT NULL, 
+    FOREIGN KEY (VehicleID) REFERENCES VEHICLE(VehicleID) ON DELETE CASCADE, 
+    FOREIGN KEY (MechanicID) REFERENCES MECHANIC(EmployeeID) ON DELETE CASCADE
+    );
+CREATE TABLE INVOICE (
+    InvoiceID INT PRIMARY KEY, 
+    InvoiceDate TIMESTAMP NOT NULL, 
+    TotalAmount DECIMAL(10, 2) NOT NULL, 
+    RepairID INT UNIQUE NOT NULL, 
+    FOREIGN KEY (RepairID) REFERENCES REPAIR(RepairID) ON DELETE CASCADE
+    );
+CREATE TABLE SPARE_PART (
+    PartID INT PRIMARY KEY, 
+    PartName VARCHAR(100) NOT NULL, 
+    Price DECIMAL(10, 2) NOT NULL, 
+    StockQuantity INT DEFAULT 0
+    ); 
+CREATE TABLE REPAIR_PART (
+    RepairID INT NOT NULL, 
+    PartID INT NOT NULL, 
+    Quantity INT NOT NULL DEFAULT 1, 
+    PRIMARY KEY (RepairID, PartID), 
+    FOREIGN KEY (RepairID) REFERENCES REPAIR(RepairID) ON DELETE CASCADE, 
+    FOREIGN KEY (PartID) REFERENCES SPARE_PART(PartID) ON DELETE CASCADE
+    ); 
+
+
+-- Implement auto-increment
+ALTER TABLE CUSTOMER ALTER COLUMN CustomerID ADD GENERATED ALWAYS AS IDENTITY;
+ALTER TABLE VEHICLE ALTER COLUMN VehicleID ADD GENERATED ALWAYS AS IDENTITY;
+ALTER TABLE EMPLOYEE ALTER COLUMN EmployeeID ADD GENERATED ALWAYS AS IDENTITY;
+ALTER TABLE APPOINTMENT ALTER COLUMN AppointmentID ADD GENERATED ALWAYS AS IDENTITY;
+ALTER TABLE REPAIR ALTER COLUMN RepairID ADD GENERATED ALWAYS AS IDENTITY;
+ALTER TABLE INVOICE ALTER COLUMN InvoiceID ADD GENERATED ALWAYS AS IDENTITY;
+ALTER TABLE SPARE_PART ALTER COLUMN PartID ADD GENERATED ALWAYS AS IDENTITY;
+
+
+INSERT INTO CUSTOMER VALUES 
+    (1, 'Ahmet Yilmaz', '05321112233', 'Kadikoy, Istanbul', 'ahmet@gmail.com'), 
+    (2, 'Ayse Demir', '05432223344', 'Cankaya, Ankara', 'ayse@gmail.com'), 
+    (3, 'Mehmet Kaya', '05553334455', 'Konak, Izmir', 'mehmet@gmail.com'); 
+INSERT INTO VEHICLE VALUES 
+    (1, '34ABC123', 'Toyota', 'Corolla', 2020, 1), 
+    (2, '06DEF456', 'BMW', '320i', 2022, 2), 
+    (3, '35GHI789', 'Ford', 'Focus', 2019, 3); 
+INSERT INTO EMPLOYEE VALUES 
+    (101, 'Canan Ak', '05001110011', 'Receptionist'), 
+    (102, 'Bora Celik', '05002220022', 'Manager'), 
+    (103, 'Ali Ozturk', '05003330033', 'Mechanic'), 
+    (104, 'Burak Sen', '05004440044', 'Mechanic'); 
+INSERT INTO RECEPTIONIST VALUES 
+    (101, 'Morning', 'Turkish, English'); 
+INSERT INTO MANAGER VALUES 
+    (102, 'Service Operations', 5000.00); 
+INSERT INTO MECHANIC VALUES 
+    (103, 'Brake &amp; Engine', 8), 
+    (104, 'Electrical Systems', 5); 
+INSERT INTO APPOINTMENT VALUES 
+    (1, '2026-11-20 10:00:00', 'Confirmed', 1, 1, 101), 
+    (2, '2026-11-21 11:30:00', 'Pending', 2, 2, 101), 
+    (3, '2026-11-22 14:00:00', 'Completed', 3, 3, 101); 
+INSERT INTO REPAIR VALUES 
+    (1, 'Brake Pad Replacement &amp; Oil Change', '2026-11-22 14:30:00', 2500.00, 3, 103), 
+    (2, 'Engine Diagnostic &amp; Battery Change', '2026-11-18 09:00:00', 4200.00, 1, 104), 
+    (3, 'Suspension Repair', '2026-11-19 11:00:00', 3100.00, 2, 103); 
+INSERT INTO INVOICE VALUES 
+    (1, '2026-11-22 16:00:00', 2500.00, 1), 
+    (2, '2026-11-18 11:00:00', 4200.00, 2), 
+    (3, '2026-11-19 13:00:00', 3100.00, 3); 
+INSERT INTO SPARE\_PART VALUES 
+    (1, 'Brake Pad Set', 1200.00, 25), 
+    (2, 'Car Battery 12V', 2000.00, 10), 
+    (3, 'Engine Oil 5L', 800.00, 50); 
+INSERT INTO REPAIR\_PART VALUES (1, 1, 1), (1, 3, 1), (2, 2, 1);

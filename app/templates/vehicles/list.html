@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Vehicles{% endblock %}
+{% block content %}
+<div class="toolbar"><h1>Vehicles</h1><a class="button" href="/vehicles/new">Add vehicle</a></div>
+<form class="search card" method="get"><input name="q" value="{{ q }}" placeholder="Plate, brand or model"><button class="button">Search</button></form>
+<div class="card"><table><thead><tr><th>ID</th><th>Plate</th><th>Brand</th><th>Model</th><th>Year</th><th>Customer</th><th>Actions</th></tr></thead><tbody>
+{% for row in rows %}<tr><td>{{ row.vehicleid }}</td><td>{{ row.platenumber }}</td><td>{{ row.brand }}</td><td>{{ row.model }}</td><td>{{ row.year or '' }}</td><td>{{ row.customer_name }}</td><td class="actions">
+<a class="button secondary" href="/vehicles/{{ row.vehicleid }}/edit">Edit</a>
+{% if user.role == 'admin' %}<form class="inline" method="post" action="/vehicles/{{ row.vehicleid }}/delete" onsubmit="return confirm('Delete this vehicle?')"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><button>Delete</button></form>{% endif %}
+</td></tr>{% endfor %}</tbody></table></div>
+{% endblock %}
