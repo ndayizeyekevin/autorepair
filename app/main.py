@@ -132,6 +132,14 @@ async def logout(request: Request, csrf_token: str = Form("")):
     return RedirectResponse("/login", status_code=303)
 
 
+@app.get("/profile", response_class=HTMLResponse)
+async def profile(request: Request):
+    user = current_user(request)
+    if not user:
+        return RedirectResponse("/login", status_code=303)
+    return templates.TemplateResponse("profile.html", template_context(request))
+
+
 @app.get("/health")
 async def health():
     fetch_one("SELECT 1")

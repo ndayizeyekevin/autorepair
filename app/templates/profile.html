@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Profile{% endblock %}
+{% block page_heading %}Profile{% endblock %}
+{% block content %}
+<section class="card profile-card">
+  <div class="profile-heading">
+    <span class="profile-avatar">{{ user.username[:1]|upper }}</span>
+    <div>
+      <h1>{{ user.username }}</h1>
+      <p>Your account information</p>
+    </div>
+  </div>
+  <dl class="profile-details">
+    <div><dt>Username</dt><dd>{{ user.username }}</dd></div>
+    <div><dt>Role</dt><dd><span class="profile-role">{{ user.role|title }}</span></dd></div>
+  </dl>
+</section>
+{% endblock %}

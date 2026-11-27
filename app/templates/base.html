@@ -49,11 +49,9 @@
       </a>
     </nav>
     <div class="sidebar-footer">
-      <span class="avatar">{{ user.username[:1]|upper }}</span>
-      <span class="sidebar-user"><strong>{{ user.username }}</strong><small>Administrator</small></span>
       <form method="post" action="/logout">
         <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-        <button class="logout-icon" type="submit" title="Log out" aria-label="Log out">↗</button>
+        <button class="sidebar-logout-button" type="submit"><span aria-hidden="true">↪</span> Log out</button>
       </form>
     </div>
   </aside>
@@ -72,10 +70,27 @@
           {% elif request.url.path.startswith('/employees') %}Employees
           {% elif request.url.path.startswith('/reports') %}Reports
           {% elif request.url.path.startswith('/users') %}App users
+          {% elif request.url.path.startswith('/profile') %}Profile
           {% else %}Workshop{% endif %}
         {% endblock %}</strong>
       </div>
-      <div class="topbar-status"><span class="status-dot"></span> System online</div>
+      <div class="topbar-actions">
+        <div class="topbar-status"><span class="status-dot"></span> System online</div>
+        <details class="header-account-menu">
+          <summary>
+            <span class="avatar header-avatar">{{ user.username[:1]|upper }}</span>
+            <span class="header-user"><strong>{{ user.username }}</strong><small>Administrator</small></span>
+            <span class="header-caret" aria-hidden="true">⌄</span>
+          </summary>
+          <div class="account-dropdown">
+            <a href="/profile"><span aria-hidden="true">♙</span> Profile</a>
+            <form method="post" action="/logout">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+              <button type="submit"><span aria-hidden="true">↪</span> Log out</button>
+            </form>
+          </div>
+        </details>
+      </div>
     </header>
   {% elif user %}
   <nav class="navbar">
