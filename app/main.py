@@ -6,16 +6,29 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 
-from app.config import PORT, SECRET_KEY, SEED_DEMO_USERS
+from app.config import (
+    HTTPS_ONLY_COOKIE,
+    INITIAL_ADMIN_PASSWORD,
+    INITIAL_ADMIN_USERNAME,
+    PORT,
+    SECRET_KEY,
+    SEED_DEMO_USERS,
+)
 from app.auth import check_csrf, ensure_csrf, hash_password, verify_password
-from app.db import fetch_all, fetch_one, transaction, wait_for_database
+from app.db import (
+    fetch_all,
+    fetch_one,
+    initialize_schema_if_empty,
+    transaction,
+    wait_for_database,
+)
 
 app = FastAPI(title="Auto Service Management System")
 app.add_middleware(
     SessionMiddleware,
     secret_key=SECRET_KEY,
     same_site="lax",
-    https_only=False,
+    https_only=HTTPS_ONLY_COOKIE,
 )
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
 templates = Jinja2Templates(directory="app/templates")
@@ -44,8 +57,37 @@ async def forbidden_handler(request: Request, exc):
 @app.on_event("startup")
 async def startup():
     wait_for_database()
-    if SEED_DEMO_USERS:
-        with transaction() as conn:
+    initialize_schema_if_empty()
+    if INITIAL_ADMIN_USERNAME and not INITIAL_ADMIN_PASSWORD:
+        raise RuntimeError(
+            "INITIAL_ADMIN_PASSWORD is required when INITIAL_ADMIN_USERNAME is set."
+        )
+    if INITIAL_ADMIN_PASSWORD and not INITIAL_ADMIN_USERNAME:
+        raise RuntimeError(
+            "INITIAL_ADMIN_USERNAME is required when INITIAL_ADMIN_PASSWORD is set."
+        )
+    if INITIAL_ADMIN_PASSWORD and not 8 <= len(INITIAL_ADMIN_PASSWORD.encode("utf-8")) <= 72:
+        raise RuntimeError(
+            "INITIAL_ADMIN_PASSWORD must be between 8 and 72 bytes."
+        )
+    with transaction() as conn:
+        user_count = conn.execute("SELECT COUNT(*) AS count FROM APP_USER").fetchone()[
+            "count"
+        ]
+        if user_count == 0 and INITIAL_ADMIN_USERNAME and INITIAL_ADMIN_PASSWORD:
+            conn.execute(
+                "INSERT INTO APP_USER (Username, PasswordHash, Role) VALUES (%s, %s, %s)",
+                (
+                    INITIAL_ADMIN_USERNAME,
+                    hash_password(INITIAL_ADMIN_PASSWORD),
+                    "admin",
+                ),
+            )
+        elif user_count == 0 and not SEED_DEMO_USERS:
+            raise RuntimeError(
+                "No application users exist. Configure an initial admin or enable demo-user seeding."
+            )
+        elif SEED_DEMO_USERS:
             for username, password, role in (
                 ("admin", "Admin123!", "admin"),
                 ("user", "User123!", "user"),

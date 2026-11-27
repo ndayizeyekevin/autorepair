@@ -1,5 +1,6 @@
 import time
 from contextlib import contextmanager
+from pathlib import Path
 
 import psycopg
 from psycopg.rows import dict_row
@@ -31,6 +32,46 @@ def wait_for_database(retries=30, delay=2):
             if attempt == retries - 1:
                 raise
             time.sleep(delay)
+
+
+def initialize_schema_if_empty():
+    with pool.connection() as conn:
+        table_count = conn.execute(
+            "SELECT COUNT(*) AS count FROM pg_tables WHERE schemaname = 'public'"
+        ).fetchone()["count"]
+        if table_count:
+            required_tables = {
+                "customer",
+                "vehicle",
+                "employee",
+                "receptionist",
+                "manager",
+                "mechanic",
+                "appointment",
+                "repair",
+                "invoice",
+                "spare_part",
+                "repair_part",
+                "app_user",
+            }
+            existing_tables = {
+                row["tablename"]
+                for row in conn.execute(
+                    "SELECT tablename FROM pg_tables WHERE schemaname = 'public'"
+                ).fetchall()
+            }
+            missing_tables = required_tables - existing_tables
+            if missing_tables:
+                missing = ", ".join(sorted(missing_tables))
+                raise RuntimeError(
+                    f"Database schema is incomplete; missing tables: {missing}"
+                )
+            return
+
+        schema_path = Path(__file__).resolve().parent.parent / "db" / "init.sql"
+        schema_sql = schema_path.read_text(encoding="utf-8")
+        with conn.transaction():
+            conn.execute(schema_sql, prepare=False)
 
 
 @contextmanager
