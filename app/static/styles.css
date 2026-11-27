@@ -30,7 +30,7 @@ h1, h2, h3 { color: var(--ink); letter-spacing: -.025em; }
 h1 { margin: 0 0 1.35rem; font-size: clamp(1.65rem, 3vw, 2rem); }
 h2 { font-size: 1.25rem; }
 
-.admin-layout { min-height: 100vh; }
+.workspace-layout { min-height: 100vh; }
 .sidebar {
   position: fixed;
   z-index: 5;
@@ -205,8 +205,8 @@ h2 { font-size: 1.25rem; }
 .profile-details dt { color: var(--muted); font-size: .75rem; font-weight: 600; text-transform: uppercase; }
 .profile-details dd { margin: .35rem 0 0; color: var(--ink); font-weight: 600; }
 .profile-role { display: inline-block; padding: .2rem .55rem; border-radius: 99px; color: #244bc2; background: var(--blue-soft); font-size: .8rem; }
-.admin-main { min-height: 100vh; margin-left: 258px; }
-.admin-topbar {
+.workspace-main { min-height: 100vh; margin-left: 258px; }
+.workspace-topbar {
   position: sticky;
   z-index: 3;
   top: 0;
@@ -219,34 +219,14 @@ h2 { font-size: 1.25rem; }
   background: rgb(255 255 255 / 92%);
   backdrop-filter: blur(12px);
 }
-.admin-topbar > div:first-child { display: grid; gap: .08rem; }
-.admin-topbar strong { font-size: 1rem; }
+.workspace-topbar > div:first-child { display: grid; gap: .08rem; }
+.workspace-topbar strong { font-size: 1rem; }
 .topbar-eyebrow { color: var(--muted); font-size: .62rem; font-weight: 700; letter-spacing: .13em; }
 .topbar-status { display: flex; align-items: center; gap: .5rem; color: #61708a; font-size: .8rem; }
 .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #22b07d; box-shadow: 0 0 0 4px #e6f7f0; }
-.admin-content { max-width: 1440px; padding: 2rem clamp(1.25rem, 3vw, 2.4rem); }
+.workspace-content { max-width: 1440px; padding: 2rem clamp(1.25rem, 3vw, 2.4rem); }
 
 .container { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
-.navbar {
-  display: flex;
-  align-items: center;
-  gap: 1.25rem;
-  padding: .8rem 1.25rem;
-  color: white;
-  background: var(--navy);
-  box-shadow: 0 4px 16px rgb(23 43 77 / 15%);
-}
-.navbar .brand { gap: .55rem; white-space: nowrap; }
-.navbar .brand-mark { width: 34px; height: 34px; flex-basis: 34px; border-radius: 10px; }
-.navbar a { color: white; text-decoration: none; }
-.nav-links { display: flex; flex: 1; flex-wrap: wrap; gap: .25rem; }
-.nav-links a { padding: .45rem .55rem; border-radius: 7px; color: #d2dced; font-size: .82rem; }
-.nav-links a:hover { color: white; background: rgb(255 255 255 / 10%); }
-.account { display: flex; align-items: center; gap: .75rem; }
-.user-pill { display: flex; align-items: center; gap: .45rem; color: white; font-size: .82rem; }
-.avatar.small { width: 27px; height: 27px; flex-basis: 27px; font-size: .72rem; }
-.role-badge { padding: .12rem .35rem; border-radius: 5px; color: #d7e4ff; background: rgb(255 255 255 / 13%); font-size: .6rem; letter-spacing: .06em; }
-.link-button { border: 0; color: white; background: transparent; cursor: pointer; }
 
 .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(185px, 1fr)); gap: 1rem; }
 .stats article {
@@ -354,8 +334,7 @@ textarea { min-height: 100px; resize: vertical; }
 
 @media (max-width: 1050px) {
   .sidebar { width: 225px; }
-  .admin-main { margin-left: 225px; }
-  .navbar { flex-wrap: wrap; }
+  .workspace-main { margin-left: 225px; }
 }
 @media (max-width: 760px) {
   .sidebar { position: static; width: auto; min-height: auto; padding: .8rem; }
@@ -364,19 +343,16 @@ textarea { min-height: 100px; resize: vertical; }
   .sidebar-nav { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .25rem; }
   .sidebar-link { min-height: 38px; padding: .4rem .5rem; font-size: .82rem; }
   .sidebar-footer { margin-top: .75rem; }
-  .admin-main { margin-left: 0; }
-  .admin-topbar { position: static; min-height: 65px; }
+  .workspace-main { margin-left: 0; }
+  .workspace-topbar { position: static; min-height: 65px; }
   .topbar-status { font-size: .72rem; }
-  .admin-content { padding-top: 1.25rem; }
-  .navbar { align-items: flex-start; }
-  .nav-links { order: 3; width: 100%; }
-  .account { margin-left: auto; }
+  .workspace-content { padding-top: 1.25rem; }
 }
 @media (max-width: 520px) {
   .sidebar-nav { grid-template-columns: 1fr 1fr; }
   .sidebar-link { gap: .45rem; }
   .container { padding: 1rem; }
-  .admin-content { padding-right: 1rem; padding-left: 1rem; }
+  .workspace-content { padding-right: 1rem; padding-left: 1rem; }
   .form-grid { grid-template-columns: 1fr; }
   .form-grid .full { grid-column: auto; }
   .toolbar { align-items: flex-start; flex-direction: column; }
