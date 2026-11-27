@@ -2,13 +2,212 @@
 {% block title %}Dashboard{% endblock %}
 {% block page_heading %}Dashboard{% endblock %}
 {% block content %}
-<h1>Good to see you, {{ user.username|title }}</h1>
-<p class="dashboard-intro">Here’s a quick overview of what’s happening at your workshop.</p>
-<div class="stats">
-  <article><span>Customers</span><strong>{{ counts.customers }}</strong></article>
-  <article><span>Vehicles</span><strong>{{ counts.vehicles }}</strong></article>
-  <article><span>Open appointments</span><strong>{{ counts.open_appointments }}</strong></article>
-  <article><span>Repairs</span><strong>{{ counts.repairs }}</strong></article>
-  <article><span>Total invoiced</span><strong>{{ "%.2f"|format(counts.total_invoiced) }} TL</strong></article>
-</div>
+<section class="dashboard-welcome">
+  <div class="dashboard-welcome-copy">
+    <span class="dashboard-kicker">YOUR WORKSHOP AT A GLANCE</span>
+    <h1>Good to see you, {{ user.username|title }}</h1>
+    <p>Keep an eye on the work, customers, and revenue moving through your shop.</p>
+  </div>
+  <div class="dashboard-actions">
+    <a class="dashboard-action dashboard-action-primary" href="/appointments/new"><span aria-hidden="true">＋</span> New appointment</a>
+    <a class="dashboard-action dashboard-action-secondary" href="/repairs/new"><span aria-hidden="true">＋</span> Start a repair</a>
+  </div>
+  <span class="dashboard-decoration dashboard-decoration-one" aria-hidden="true"></span>
+  <span class="dashboard-decoration dashboard-decoration-two" aria-hidden="true"></span>
+</section>
+
+<section class="stats dashboard-metrics" aria-label="Workshop summary">
+  <article class="metric-card metric-customers">
+    <div class="metric-heading"><span>Customers</span><span class="metric-icon" aria-hidden="true">◉</span></div>
+    <strong>{{ counts.customers }}</strong>
+    <small>Customers on file</small>
+  </article>
+  <article class="metric-card metric-vehicles">
+    <div class="metric-heading"><span>Vehicles</span><span class="metric-icon" aria-hidden="true">▣</span></div>
+    <strong>{{ counts.vehicles }}</strong>
+    <small>Vehicles on file</small>
+  </article>
+  <article class="metric-card metric-appointments">
+    <div class="metric-heading"><span>Open appointments</span><span class="metric-icon" aria-hidden="true">◷</span></div>
+    <strong>{{ counts.open_appointments }}</strong>
+    <small>Pending or confirmed</small>
+  </article>
+  <article class="metric-card metric-repairs">
+    <div class="metric-heading"><span>Repairs</span><span class="metric-icon" aria-hidden="true">⚒</span></div>
+    <strong>{{ counts.repairs }}</strong>
+    <small>Repairs on record</small>
+  </article>
+  <article class="metric-card metric-revenue">
+    <div class="metric-heading"><span>Total invoiced</span><span class="metric-icon" aria-hidden="true">↗</span></div>
+    <strong>{{ "%.2f"|format(counts.total_invoiced) }} <small>TL</small></strong>
+    <small>Across all invoices</small>
+  </article>
+</section>
+
+<section class="dashboard-charts" aria-label="Workshop charts">
+  <article class="chart-card revenue-card">
+    <header class="chart-card-heading">
+      <div>
+        <span class="chart-overline">PERFORMANCE</span>
+        <h2>Revenue trend</h2>
+        <p>Invoiced revenue over the last six months</p>
+      </div>
+      <span class="chart-period"><span aria-hidden="true">●</span> Last 6 months</span>
+    </header>
+    <div class="chart-wrap revenue-chart-wrap">
+      <canvas id="revenue-chart" role="img" aria-label="Monthly invoiced revenue for the last six months"></canvas>
+    </div>
+  </article>
+  <article class="chart-card appointments-card">
+    <header class="chart-card-heading">
+      <div>
+        <span class="chart-overline">WORKLOAD</span>
+        <h2>Appointments</h2>
+        <p>Current status breakdown</p>
+      </div>
+    </header>
+    <div class="chart-wrap appointments-chart-wrap">
+      <canvas id="appointments-chart" role="img" aria-label="Appointments grouped by status"></canvas>
+    </div>
+  </article>
+</section>
+
+<script src="/static/chart.umd.min.js"></script>
+<script>
+  const chartMonths = {{ chart_months|tojson }};
+  const chartRevenue = {{ chart_revenue|tojson }};
+  const appointmentStatusLabels = {{ appointment_status_labels|tojson }};
+  const appointmentStatusCounts = {{ appointment_status_counts|tojson }};
+  const money = new Intl.NumberFormat("tr-TR", {
+    style: "currency",
+    currency: "TRY",
+    maximumFractionDigits: 0
+  });
+
+  const revenueCanvas = document.getElementById("revenue-chart");
+  const revenueContext = revenueCanvas.getContext("2d");
+  const revenueFill = revenueContext.createLinearGradient(0, 0, 0, 300);
+  revenueFill.addColorStop(0, "rgba(49, 94, 232, 0.24)");
+  revenueFill.addColorStop(1, "rgba(49, 94, 232, 0)");
+
+  new Chart(revenueCanvas, {
+    type: "line",
+    data: {
+      labels: chartMonths,
+      datasets: [{
+        label: "Invoiced revenue",
+        data: chartRevenue,
+        borderColor: "#315ee8",
+        backgroundColor: revenueFill,
+        fill: true,
+        tension: 0.38,
+        borderWidth: 3,
+        pointRadius: 3,
+        pointHoverRadius: 6,
+        pointBackgroundColor: "#fff",
+        pointBorderColor: "#315ee8",
+        pointBorderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { intersect: false, mode: "index" },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          displayColors: false,
+          padding: 11,
+          callbacks: {
+            label: (context) => ` ${money.format(context.parsed.y)}`
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          border: { display: false },
+          ticks: { color: "#8792a7", font: { size: 11 } }
+        },
+        y: {
+          beginAtZero: true,
+          border: { display: false, dash: [4, 4] },
+          grid: { color: "#edf0f6" },
+          ticks: {
+            color: "#8792a7",
+            maxTicksLimit: 5,
+            callback: (value) => `${new Intl.NumberFormat("tr-TR", { notation: "compact", maximumFractionDigits: 1 }).format(value)} TL`
+          }
+        }
+      }
+    }
+  });
+
+  const centerLabel = {
+    id: "centerLabel",
+    afterDraw(chart) {
+      const { ctx, chartArea } = chart;
+      if (!chartArea) return;
+      const total = chart.data.datasets[0].data.reduce((sum, value) => sum + value, 0);
+      const centerX = (chartArea.left + chartArea.right) / 2;
+      const centerY = (chartArea.top + chartArea.bottom) / 2;
+
+      ctx.save();
+      ctx.textAlign = "center";
+      ctx.fillStyle = "#1c2740";
+      ctx.font = "700 25px Inter, Segoe UI, sans-serif";
+      ctx.fillText(total, centerX, centerY - 2);
+      ctx.fillStyle = "#8792a7";
+      ctx.font = "500 11px Inter, Segoe UI, sans-serif";
+      ctx.fillText("appointments", centerX, centerY + 18);
+      ctx.restore();
+    }
+  };
+  const statusPalette = {
+    Pending: "#f2ad4b",
+    Confirmed: "#315ee8",
+    Completed: "#22a878",
+    Cancelled: "#e56b79"
+  };
+  const fallbackColors = ["#315ee8", "#22a878", "#f2ad4b", "#9b82e8", "#e56b79"];
+
+  new Chart(document.getElementById("appointments-chart"), {
+    type: "doughnut",
+    data: {
+      labels: appointmentStatusLabels,
+      datasets: [{
+        data: appointmentStatusCounts,
+        backgroundColor: appointmentStatusLabels.map((label, index) => statusPalette[label] || fallbackColors[index % fallbackColors.length]),
+        borderWidth: 0,
+        spacing: 4,
+        hoverOffset: 6
+      }]
+    },
+    plugins: [centerLabel],
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      cutout: "74%",
+      plugins: {
+        legend: {
+          position: "bottom",
+          labels: {
+            usePointStyle: true,
+            pointStyle: "circle",
+            boxWidth: 8,
+            boxHeight: 8,
+            padding: 17,
+            color: "#66728a",
+            font: { size: 11 }
+          }
+        },
+        tooltip: {
+          callbacks: {
+            label: (context) => ` ${context.label}: ${context.parsed}`
+          }
+        }
+      }
+    }
+  });
+</script>
 {% endblock %}
