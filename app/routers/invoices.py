@@ -15,10 +15,12 @@ async def invoice_list(request:Request):
     return templates.TemplateResponse("invoices/list.html",template_context(request,rows=fetch_all("SELECT * FROM INVOICE ORDER BY InvoiceDate DESC")))
 
 @router.get("/invoices/new")
-async def invoice_new(request:Request):
+async def invoice_new(request:Request,repair_id:int=None):
     require_login(request)
     repairs=fetch_all("SELECT r.*, (r.Cost+COALESCE((SELECT SUM(rp.Quantity*p.Price) FROM REPAIR_PART rp JOIN SPARE_PART p ON p.PartID=rp.PartID WHERE rp.RepairID=r.RepairID),0)) AS proposed FROM REPAIR r WHERE NOT EXISTS (SELECT 1 FROM INVOICE i WHERE i.RepairID=r.RepairID)")
-    return templates.TemplateResponse("invoices/form.html",template_context(request,item=None,repairs=repairs,proposed=0,error=None))
+    selected=next((repair for repair in repairs if repair["repairid"] == repair_id),None)
+    proposed=selected["proposed"] if selected else 0
+    return templates.TemplateResponse("invoices/form.html",template_context(request,item=None,repairs=repairs,proposed=proposed,selected_repair_id=repair_id,error=None))
 
 @router.post("/invoices/new")
 async def invoice_create(request:Request,csrf_token:str=Form(...),invoicedate:str=Form(...),totalamount:float=Form(...),repairid:int=Form(...)):
@@ -40,6 +42,20 @@ async def invoice_edit(request:Request,invoice_id:int):
 @router.post("/invoices/{invoice_id}/edit")
 async def invoice_update(request:Request,invoice_id:int,csrf_token:str=Form(...),invoicedate:str=Form(...),totalamount:float=Form(...),repairid:int=Form(...)):
     require_login(request);check_csrf(request,csrf_token)
+    if totalamount < 0:
+        item=fetch_one("SELECT * FROM INVOICE WHERE InvoiceID=%s",(invoice_id,))
+        return templates.TemplateResponse(
+            "invoices/form.html",
+            template_context(
+                request,
+                item=item,
+                repairs=fetch_all("SELECT * FROM REPAIR"),
+                proposed=item["totalamount"] if item else 0,
+                selected_repair_id=item["repairid"] if item else None,
+                error="Total amount cannot be negative.",
+            ),
+            status_code=400,
+        )
     try:
         with transaction() as conn:conn.execute("UPDATE INVOICE SET InvoiceDate=%s,TotalAmount=%s,RepairID=%s WHERE InvoiceID=%s",(invoicedate,totalamount,repairid,invoice_id))
     except UniqueViolation:

@@ -6,11 +6,97 @@
   <title>{% block title %}Auto Service{% endblock %}</title>
   <link rel="stylesheet" href="/static/styles.css">
 </head>
-<body>
-  {% if user %}
+<body class="{% if user and user.role == 'admin' %}admin-layout{% endif %}">
+  {% if user and user.role == 'admin' %}
+  <aside class="sidebar">
+    <a class="brand" href="/">
+      <span class="brand-mark">AS</span>
+      <span class="brand-copy"><strong>Auto Service</strong><small>Management system</small></span>
+    </a>
+    <div class="sidebar-caption">WORKSPACE</div>
+    <nav class="sidebar-nav" aria-label="Admin navigation">
+      <a class="sidebar-link {% if request.url.path == '/' %}active{% endif %}" href="/">
+        <span class="sidebar-icon">⌂</span><span>Dashboard</span>
+      </a>
+      <a class="sidebar-link {% if request.url.path.startswith('/customers') %}active{% endif %}" href="/customers">
+        <span class="sidebar-icon">◉</span><span>Customers</span>
+      </a>
+      <a class="sidebar-link {% if request.url.path.startswith('/vehicles') %}active{% endif %}" href="/vehicles">
+        <span class="sidebar-icon">▣</span><span>Vehicles</span>
+      </a>
+      <a class="sidebar-link {% if request.url.path.startswith('/appointments') %}active{% endif %}" href="/appointments">
+        <span class="sidebar-icon">◷</span><span>Appointments</span>
+      </a>
+      <a class="sidebar-link {% if request.url.path.startswith('/repairs') %}active{% endif %}" href="/repairs">
+        <span class="sidebar-icon">⚒</span><span>Repairs</span>
+      </a>
+      <a class="sidebar-link {% if request.url.path.startswith('/parts') %}active{% endif %}" href="/parts">
+        <span class="sidebar-icon">⬡</span><span>Spare parts</span>
+      </a>
+      <div class="sidebar-caption">BUSINESS</div>
+      <a class="sidebar-link {% if request.url.path.startswith('/invoices') %}active{% endif %}" href="/invoices">
+        <span class="sidebar-icon">▤</span><span>Invoices</span>
+      </a>
+      <a class="sidebar-link {% if request.url.path.startswith('/employees') %}active{% endif %}" href="/employees">
+        <span class="sidebar-icon">♙</span><span>Employees</span>
+      </a>
+      <a class="sidebar-link {% if request.url.path.startswith('/reports') %}active{% endif %}" href="/reports">
+        <span class="sidebar-icon">▥</span><span>Reports</span>
+      </a>
+      <div class="sidebar-caption">ADMINISTRATION</div>
+      <a class="sidebar-link {% if request.url.path.startswith('/users') %}active{% endif %}" href="/users">
+        <span class="sidebar-icon">⚙</span><span>App users</span>
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <form method="post" action="/logout">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+        <button class="sidebar-logout-button" type="submit"><span aria-hidden="true">↪</span> Log out</button>
+      </form>
+    </div>
+  </aside>
+  <div class="admin-main">
+    <header class="admin-topbar">
+      <div>
+        <span class="topbar-eyebrow">AUTO SERVICE MANAGEMENT</span>
+        <strong>{% block page_heading %}
+          {% if request.url.path == '/' %}Dashboard
+          {% elif request.url.path.startswith('/customers') %}Customers
+          {% elif request.url.path.startswith('/vehicles') %}Vehicles
+          {% elif request.url.path.startswith('/appointments') %}Appointments
+          {% elif request.url.path.startswith('/repairs') %}Repairs
+          {% elif request.url.path.startswith('/parts') %}Spare parts
+          {% elif request.url.path.startswith('/invoices') %}Invoices
+          {% elif request.url.path.startswith('/employees') %}Employees
+          {% elif request.url.path.startswith('/reports') %}Reports
+          {% elif request.url.path.startswith('/users') %}App users
+          {% elif request.url.path.startswith('/profile') %}Profile
+          {% else %}Workshop{% endif %}
+        {% endblock %}</strong>
+      </div>
+      <div class="topbar-actions">
+        <div class="topbar-status"><span class="status-dot"></span> System online</div>
+        <details class="header-account-menu">
+          <summary>
+            <span class="avatar header-avatar">{{ user.username[:1]|upper }}</span>
+            <span class="header-user"><strong>{{ user.username }}</strong><small>Administrator</small></span>
+            <span class="header-caret" aria-hidden="true">⌄</span>
+          </summary>
+          <div class="account-dropdown">
+            <a href="/profile"><span aria-hidden="true">♙</span> Profile</a>
+            <form method="post" action="/logout">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+              <button type="submit"><span aria-hidden="true">↪</span> Log out</button>
+            </form>
+          </div>
+        </details>
+      </div>
+    </header>
+  {% elif user %}
   <nav class="navbar">
-    <a class="brand" href="/">Auto Service</a>
+    <a class="brand" href="/"><span class="brand-mark">AS</span><span>Auto Service</span></a>
     <div class="nav-links">
+      <a href="/">Dashboard</a>
       <a href="/customers">Customers</a>
       <a href="/vehicles">Vehicles</a>
       <a href="/appointments">Appointments</a>
@@ -19,10 +105,9 @@
       <a href="/parts">Parts</a>
       <a href="/employees">Employees</a>
       <a href="/reports">Reports</a>
-      {% if user.role == 'admin' %}<a href="/users">Users</a>{% endif %}
     </div>
     <div class="account">
-      <span>{{ user.username }} · {{ user.role }}</span>
+      <span class="user-pill"><span class="avatar small">{{ user.username[:1]|upper }}</span>{{ user.username }} <span class="role-badge">USER</span></span>
       <form method="post" action="/logout">
         <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
         <button class="link-button" type="submit">Logout</button>
@@ -30,9 +115,10 @@
     </div>
   </nav>
   {% endif %}
-  <main class="container">
+  <main class="{% if user and user.role == 'admin' %}container admin-content{% else %}container{% endif %}">
     {% if message %}<div class="alert">{{ message }}</div>{% endif %}
     {% block content %}{% endblock %}
   </main>
+  {% if user and user.role == 'admin' %}</div>{% endif %}
 </body>
 </html>
