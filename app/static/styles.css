@@ -193,6 +193,9 @@ h2 { font-size: 1.25rem; }
 .account-dropdown a:hover, .account-dropdown button:hover { color: var(--blue); background: #f2f5fb; }
 .account-dropdown form { margin: 0; }
 .profile-card { max-width: 720px; }
+.profile-help { margin: -.35rem 0 1rem; color: var(--muted); font-size: .88rem; }
+.password-form { max-width: 520px; }
+.alert.success { border-color: #bde8d5; border-left-color: var(--green); color: #17684d; background: #ecf9f3; }
 .profile-heading { display: flex; align-items: center; gap: 1rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--line); }
 .profile-heading h1 { margin: 0; }
 .profile-heading p { margin: .2rem 0 0; color: var(--muted); }

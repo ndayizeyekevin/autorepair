@@ -48,6 +48,19 @@ async def repair_edit(request:Request,repair_id:int):
 @router.post("/repairs/{repair_id}/edit")
 async def repair_update(request:Request,repair_id:int,csrf_token:str=Form(...),repairdate:str=Form(...),cost:float=Form(0),problemdescription:str=Form(""),vehicleid:int=Form(...),mechanicid:int=Form(...)):
     require_login(request);check_csrf(request,csrf_token)
+    if cost < 0:
+        item=fetch_one("SELECT * FROM REPAIR WHERE RepairID=%s",(repair_id,))
+        return templates.TemplateResponse(
+            "repairs/form.html",
+            template_context(
+                request,
+                item=item,
+                error="Cost cannot be negative.",
+                vehicles=fetch_all("SELECT * FROM VEHICLE"),
+                mechanics=fetch_all("SELECT e.EmployeeID,e.Name,m.Specialty FROM EMPLOYEE e JOIN MECHANIC m ON m.EmployeeID=e.EmployeeID"),
+            ),
+            status_code=400,
+        )
     with transaction() as conn:
         conn.execute("UPDATE REPAIR SET ProblemDescription=%s,RepairDate=%s,Cost=%s,VehicleID=%s,MechanicID=%s WHERE RepairID=%s",(problemdescription or None,repairdate,cost,vehicleid,mechanicid,repair_id))
     return RedirectResponse("/repairs",status_code=303)
@@ -122,5 +135,13 @@ async def generate_invoice(request:Request,repair_id:int,csrf_token:str=Form(...
 @router.post("/repairs/{repair_id}/delete")
 async def repair_delete(request:Request,repair_id:int,csrf_token:str=Form(...)):
     require_role("admin")(request);check_csrf(request,csrf_token)
-    with transaction() as conn:conn.execute("DELETE FROM REPAIR WHERE RepairID=%s",(repair_id,))
+    with transaction() as conn:
+        conn.execute(
+            """UPDATE SPARE_PART AS p
+               SET StockQuantity = p.StockQuantity + rp.Quantity
+               FROM REPAIR_PART AS rp
+               WHERE rp.PartID = p.PartID AND rp.RepairID = %s""",
+            (repair_id,),
+        )
+        conn.execute("DELETE FROM REPAIR WHERE RepairID=%s",(repair_id,))
     return RedirectResponse("/repairs",status_code=303)

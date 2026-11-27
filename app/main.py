@@ -7,8 +7,8 @@ from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.config import PORT, SECRET_KEY, SEED_DEMO_USERS
+from app.auth import check_csrf, ensure_csrf, hash_password, verify_password
 from app.db import fetch_all, fetch_one, transaction, wait_for_database
-from app.auth import ensure_csrf, hash_password, verify_password
 
 app = FastAPI(title="Auto Service Management System")
 app.add_middleware(
@@ -137,7 +137,63 @@ async def profile(request: Request):
     user = current_user(request)
     if not user:
         return RedirectResponse("/login", status_code=303)
-    return templates.TemplateResponse("profile.html", template_context(request))
+    return templates.TemplateResponse(
+        "profile.html",
+        template_context(request, password_error=None, password_success=None),
+    )
+
+
+@app.post("/profile/password", response_class=HTMLResponse)
+async def change_password(
+    request: Request,
+    csrf_token: str = Form(...),
+    current_password: str = Form(...),
+    new_password: str = Form(...),
+    confirm_password: str = Form(...),
+):
+    check_csrf(request, csrf_token)
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return RedirectResponse("/login", status_code=303)
+
+    account = fetch_one(
+        "SELECT PasswordHash FROM APP_USER WHERE UserID = %s",
+        (user_id,),
+    )
+    error = None
+    if not account:
+        request.session.clear()
+        return RedirectResponse("/login", status_code=303)
+    if not verify_password(current_password, account["passwordhash"]):
+        error = "Your current password is incorrect."
+    elif len(new_password.encode("utf-8")) < 8 or len(new_password.encode("utf-8")) > 72:
+        error = "The new password must be between 8 and 72 bytes."
+    elif new_password != confirm_password:
+        error = "The new password and confirmation do not match."
+    elif verify_password(new_password, account["passwordhash"]):
+        error = "Choose a new password that differs from your current password."
+
+    if error:
+        return templates.TemplateResponse(
+            "profile.html",
+            template_context(request, password_error=error, password_success=None),
+            status_code=400,
+        )
+
+    with transaction() as conn:
+        conn.execute(
+            "UPDATE APP_USER SET PasswordHash = %s WHERE UserID = %s",
+            (hash_password(new_password), user_id),
+        )
+    request.session["csrf"] = secrets.token_urlsafe(32)
+    return templates.TemplateResponse(
+        "profile.html",
+        template_context(
+            request,
+            password_error=None,
+            password_success="Your password was updated successfully.",
+        ),
+    )
 
 
 @app.get("/health")

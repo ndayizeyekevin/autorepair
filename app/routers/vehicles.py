@@ -58,6 +58,18 @@ async def vehicle_edit(request: Request, vehicle_id: int):
 async def vehicle_update(request: Request, vehicle_id: int, csrf_token: str = Form(...), platenumber: str = Form(...), brand: str = Form(...), model: str = Form(...), year: int = Form(None), customerid: int = Form(...)):
     require_login(request)
     check_csrf(request, csrf_token)
+    if year is not None and not 1900 <= year <= 2100:
+        item = fetch_one("SELECT * FROM VEHICLE WHERE VehicleID=%s", (vehicle_id,))
+        return templates.TemplateResponse(
+            "vehicles/form.html",
+            template_context(
+                request,
+                item=item,
+                customers=fetch_all("SELECT * FROM CUSTOMER ORDER BY Name"),
+                error="Year must be between 1900 and 2100.",
+            ),
+            status_code=400,
+        )
     try:
         with transaction() as conn:
             conn.execute("UPDATE VEHICLE SET PlateNumber=%s,Brand=%s,Model=%s,Year=%s,CustomerID=%s WHERE VehicleID=%s", (platenumber.strip(), brand.strip(), model.strip(), year, customerid, vehicle_id))

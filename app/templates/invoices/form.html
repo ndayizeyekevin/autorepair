@@ -3,5 +3,15 @@
 <form method="post"><input type="hidden" name="csrf_token" value="{{ csrf_token }}"><div class="form-grid">
 <label>Date *<input type="datetime-local" name="invoicedate" required value="{{ item.invoicedate.strftime('%Y-%m-%dT%H:%M') if item else '' }}"></label>
 <label>Total amount *<input type="number" step="0.01" min="0" name="totalamount" required value="{{ item.totalamount if item else proposed }}"></label>
-<label class="full">Repair *<select name="repairid" required>{% for r in repairs %}<option value="{{ r.repairid }}" {% if item and item.repairid==r.repairid %}selected{% endif %}>#{{ r.repairid }} - {{ r.problemdescription or 'Repair' }}</option>{% endfor %}</select></label>
-</div><button class="button">Save</button> <a class="button secondary" href="/invoices">Cancel</a></form></section>{% endblock %}
+<label class="full">Repair *<select id="repairid" name="repairid" required>{% for r in repairs %}<option value="{{ r.repairid }}" data-proposed="{{ r.proposed if r.proposed is defined else r.cost or 0 }}" {% if (item and item.repairid==r.repairid) or (not item and selected_repair_id==r.repairid) %}selected{% endif %}>#{{ r.repairid }} - {{ r.problemdescription or 'Repair' }}</option>{% endfor %}</select></label>
+</div><button class="button">Save</button> <a class="button secondary" href="/invoices">Cancel</a></form></section>
+<script>
+const repairSelect = document.getElementById('repairid');
+if (repairSelect) {
+  repairSelect.addEventListener('change', () => {
+    const option = repairSelect.selectedOptions[0];
+    document.querySelector('[name="totalamount"]').value = option.dataset.proposed || '0';
+  });
+}
+</script>
+{% endblock %}

@@ -15,4 +15,23 @@
     <div><dt>Role</dt><dd><span class="profile-role">{{ user.role|title }}</span></dd></div>
   </dl>
 </section>
+<section class="card profile-card">
+  <h2>Change password</h2>
+  <p class="profile-help">Use your current password to confirm this change. New passwords must be 8–72 bytes long.</p>
+  {% if password_error %}<div class="alert danger" role="alert">{{ password_error }}</div>{% endif %}
+  {% if password_success %}<div class="alert success" role="status">{{ password_success }}</div>{% endif %}
+  <form method="post" action="/profile/password" class="password-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
+    <label>Current password
+      <input type="password" name="current_password" autocomplete="current-password" required>
+    </label>
+    <label>New password
+      <input type="password" name="new_password" autocomplete="new-password" minlength="8" maxlength="72" required>
+    </label>
+    <label>Confirm new password
+      <input type="password" name="confirm_password" autocomplete="new-password" minlength="8" maxlength="72" required>
+    </label>
+    <button class="button" type="submit">Update password</button>
+  </form>
+</section>
 {% endblock %}
