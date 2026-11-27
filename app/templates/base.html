@@ -6,15 +6,15 @@
   <title>{% block title %}Auto Service{% endblock %}</title>
   <link rel="stylesheet" href="/static/styles.css">
 </head>
-<body class="{% if user and user.role == 'admin' %}admin-layout{% endif %}">
-  {% if user and user.role == 'admin' %}
+<body class="{% if user %}admin-layout{% endif %}">
+  {% if user %}
   <aside class="sidebar">
     <a class="brand" href="/">
       <span class="brand-mark">AS</span>
       <span class="brand-copy"><strong>Auto Service</strong><small>Management system</small></span>
     </a>
     <div class="sidebar-caption">WORKSPACE</div>
-    <nav class="sidebar-nav" aria-label="Admin navigation">
+    <nav class="sidebar-nav" aria-label="Main navigation">
       <a class="sidebar-link {% if request.url.path == '/' %}active{% endif %}" href="/">
         <span class="sidebar-icon">⌂</span><span>Dashboard</span>
       </a>
@@ -43,10 +43,12 @@
       <a class="sidebar-link {% if request.url.path.startswith('/reports') %}active{% endif %}" href="/reports">
         <span class="sidebar-icon">▥</span><span>Reports</span>
       </a>
+      {% if user.role == 'admin' %}
       <div class="sidebar-caption">ADMINISTRATION</div>
       <a class="sidebar-link {% if request.url.path.startswith('/users') %}active{% endif %}" href="/users">
         <span class="sidebar-icon">⚙</span><span>App users</span>
       </a>
+      {% endif %}
     </nav>
     <div class="sidebar-footer">
       <form method="post" action="/logout">
@@ -79,7 +81,7 @@
         <details class="header-account-menu">
           <summary>
             <span class="avatar header-avatar">{{ user.username[:1]|upper }}</span>
-            <span class="header-user"><strong>{{ user.username }}</strong><small>Administrator</small></span>
+            <span class="header-user"><strong>{{ user.username }}</strong><small>{% if user.role == 'admin' %}Administrator{% else %}Workshop user{% endif %}</small></span>
             <span class="header-caret" aria-hidden="true">⌄</span>
           </summary>
           <div class="account-dropdown">
@@ -92,33 +94,11 @@
         </details>
       </div>
     </header>
-  {% elif user %}
-  <nav class="navbar">
-    <a class="brand" href="/"><span class="brand-mark">AS</span><span>Auto Service</span></a>
-    <div class="nav-links">
-      <a href="/">Dashboard</a>
-      <a href="/customers">Customers</a>
-      <a href="/vehicles">Vehicles</a>
-      <a href="/appointments">Appointments</a>
-      <a href="/repairs">Repairs</a>
-      <a href="/invoices">Invoices</a>
-      <a href="/parts">Parts</a>
-      <a href="/employees">Employees</a>
-      <a href="/reports">Reports</a>
-    </div>
-    <div class="account">
-      <span class="user-pill"><span class="avatar small">{{ user.username[:1]|upper }}</span>{{ user.username }} <span class="role-badge">USER</span></span>
-      <form method="post" action="/logout">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
-        <button class="link-button" type="submit">Logout</button>
-      </form>
-    </div>
-  </nav>
   {% endif %}
-  <main class="{% if user and user.role == 'admin' %}container admin-content{% else %}container{% endif %}">
+  <main class="{% if user %}container admin-content{% else %}container{% endif %}">
     {% if message %}<div class="alert">{{ message }}</div>{% endif %}
     {% block content %}{% endblock %}
   </main>
-  {% if user and user.role == 'admin' %}</div>{% endif %}
+  {% if user %}</div>{% endif %}
 </body>
 </html>
