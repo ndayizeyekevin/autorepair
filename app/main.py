@@ -95,7 +95,36 @@ async def dashboard(request: Request):
           (SELECT COALESCE(SUM(TotalAmount),0) FROM INVOICE) AS total_invoiced
         """
     )
-    return templates.TemplateResponse("dashboard.html", template_context(request, counts=counts))
+    monthly_revenue = fetch_all(
+        """
+        SELECT TO_CHAR(months.month_start, 'Mon') AS month,
+               COALESCE(SUM(invoice.TotalAmount), 0)::float AS revenue
+        FROM generate_series(
+          date_trunc('month', CURRENT_DATE) - INTERVAL '5 months',
+          date_trunc('month', CURRENT_DATE),
+          INTERVAL '1 month'
+        ) AS months(month_start)
+        LEFT JOIN INVOICE invoice
+          ON invoice.InvoiceDate >= months.month_start
+         AND invoice.InvoiceDate < months.month_start + INTERVAL '1 month'
+        GROUP BY months.month_start
+        ORDER BY months.month_start
+        """
+    )
+    appointment_statuses = fetch_all(
+        "SELECT Status AS status, COUNT(*) AS count FROM APPOINTMENT GROUP BY Status ORDER BY count DESC"
+    )
+    return templates.TemplateResponse(
+        "dashboard.html",
+        template_context(
+            request,
+            counts=counts,
+            chart_months=[row["month"] for row in monthly_revenue],
+            chart_revenue=[row["revenue"] for row in monthly_revenue],
+            appointment_status_labels=[row["status"] for row in appointment_statuses],
+            appointment_status_counts=[row["count"] for row in appointment_statuses],
+        ),
+    )
 
 
 @app.get("/login", response_class=HTMLResponse)
