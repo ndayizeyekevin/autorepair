@@ -25,7 +25,9 @@ services:
       PORT: "8000"
       SEED_DEMO_USERS: "true"
     ports:
+      - "80:8000"
       - "8000:8000"
+
 
 volumes:
   postgres_data:
